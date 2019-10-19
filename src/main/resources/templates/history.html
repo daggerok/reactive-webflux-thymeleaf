@@ -9,21 +9,15 @@
             display: grid;
             height: 100vh;
             grid-template-areas:
-                    "heading-part"
-                    "middle-part"
+                    "top-part"
                     "bottom-part";
             grid-template-rows:
                     1fr
-                    11fr
-                    1fr;
+                    6fr;
         }
 
-        .heading-part {
-            grid-area: heading-part;
-        }
-
-        .middle-part {
-            grid-area: middle-part;
+        .top-part {
+            grid-area: top-part;
         }
 
         .bottom-part {
@@ -33,15 +27,13 @@
 </head>
 <body class="container-part">
     <div class="bottom-part">
-        <footer data-th-replace="dry :: copy"></footer><br/>
-    </div>
-    <div class="middle-part">
         <div data-th-each="message : ${messages}">
             [[${#temporals.format(message.at, 'HH:mm:ss')}]]: [[${message.body}]]
         </div>
     </div>
-    <div class="heading-part">
-        <h3 data-th-replace="dry :: heading"></h3>
+    <div class="top-part">
+        <h3>History</h3>
+        <footer data-th-replace="dry :: copy"></footer>
         <a href="index.html" data-th-href="@{/}">messaging</a>
     </div>
 </body>

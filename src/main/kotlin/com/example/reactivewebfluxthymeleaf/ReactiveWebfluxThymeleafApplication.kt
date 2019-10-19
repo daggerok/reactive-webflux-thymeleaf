@@ -33,7 +33,9 @@ data class Message(val body: String? = "",
 
 @Repository
 class MessageRepository(private val log: Logger = LogManager.getLogger(),
-                        private val db: MutableList<Message> = mutableListOf()) {
+                        private val db: MutableList<Message> = mutableListOf() /*(1..40)
+                                .toList().map { Message(it.toString()) }
+                                .toMutableList()*/) {
 
     fun save(body: String) = save(Message(body))
 
@@ -65,24 +67,25 @@ class ApplicationWebExceptionHandler : WebExceptionHandler {
 
 @Configuration
 class SharedConfig(private val messageRepository: MessageRepository) {
-    @Bean fun sharedEventStream() = messageRepository.findAll().share()
+    @Bean fun sharedEventStream() = Flux
+            .zip(messageRepository.findAll(),
+                    Flux.interval(Duration.ofMillis(1)))
+            .map { it.t1 }
+            .share() // where is magic?
+            .sort { m1, m2 -> -m1.at.compareTo(m2.at) }
 }
 
 @Controller
-@RequestMapping("/messages")
-class MessagesPage(private val sharedEventStream: Flux<Message>) {
+@RequestMapping("/history")
+class HistoryPage(private val sharedEventStream: Flux<Message>) {
 
     private val log = LogManager.getLogger()
 
     @GetMapping("", "/")
     fun index(): Rendering {
-        val interval = Flux.interval(Duration.ofMillis(99))
-        val zip = Flux.zip(sharedEventStream, interval).map { it.t1 }
-        val messages = ReactiveDataDriverContextVariable(zip, 1)
         log.info("handling messages")
-        if (System.currentTimeMillis().toInt() % 6 == 5) // denied symbols: |, \ ie: "\\"
-            throw RuntimeException("oops ' ololo \" .. ,/[] | !@#$%^&*())_+")
-        return Rendering.view("messages")
+        val messages = ReactiveDataDriverContextVariable(sharedEventStream, 1)
+        return Rendering.view("history")
                 .modelAttribute("messages", messages)
                 .build()
     }
@@ -98,8 +101,8 @@ class IndexPage(private val sharedEventStream: Flux<Message>,
     fun sendMessageRedirect(@ModelAttribute("message") message: Message): Rendering {
         val payload = message.body ?: ""
         if (payload.isNotBlank()) {
-            log.info("posting message: {}", message)
             messageRepository.save(payload)
+                    .subscribe { log.info("posting message: {}", message) }
         }
         return Rendering.view("redirect:/").build()
     }
@@ -107,12 +110,10 @@ class IndexPage(private val sharedEventStream: Flux<Message>,
     @GetMapping("", "/", "/err")
     fun get(@ModelAttribute("message") message: Message): Rendering {
         log.info("rendering messages")
-        val data = sharedEventStream.sort { m1, m2 -> -m1.at.compareTo(m2.at) }
-        val messages = ReactiveDataDriverContextVariable(data, 1)
-        if (System.currentTimeMillis().toInt() % 6 == 5) // denied symbols: |, \ ie: "\\"
-            throw RuntimeException("oops ' ololo \" .. ,/[] | !@#$%^&*())_+")
+        val messages = ReactiveDataDriverContextVariable(sharedEventStream.take(40), 1)
+        // if (System.currentTimeMillis().toInt() % 6 == 5) // denied symbols: |, \ ie: "\\"
+        //     throw RuntimeException("oops ' ololo \" .. ,/[] | !@#$%^&*())_+")
         return Rendering.view("index")
-                // .modelAttribute("messages", zip)
                 .modelAttribute("messages", messages)
                 .build()
     }

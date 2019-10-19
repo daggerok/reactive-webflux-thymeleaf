@@ -8,7 +8,7 @@ bash ./build/libs/*.jar
 curl -XPOST localhost:8080 body=ololo
 curl -XPOST localhost:8080 body=trololo
 
-curl localhost:8080/messages
+curl localhost:8080/history
 ```
 
 open http://127.0.0.1:8080/

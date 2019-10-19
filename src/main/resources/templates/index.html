@@ -9,12 +9,10 @@
             height: 100vh;
             grid-template-areas:
                     "heading-part"
-                    "middle-part"
                     "bottom-part";
             grid-template-rows:
-                    1fr
-                    11fr
-                    1fr;
+                    3fr
+                    18fr;
         }
 
         .heading-part {
@@ -32,17 +30,17 @@
 </head>
 <body class="container-part">
     <div class="heading-part">
-        <h3 data-th-replace="dry :: heading"></h3>
-        <a href="messages.html" data-th-href="@{/messages}">messages</a>
-    </div>
-    <div class="bottom-part">
-        <footer data-th-replace="dry :: copy"></footer><br/>
+        <h3>Messaging</h3>
+        <footer data-th-replace="dry :: copy"></footer>
+        <a href="history.html" data-th-href="@{/history}">history</a>
+        <br/>
+        <br/>
         <form action="#/" data-th-action="@{/}" data-th-object="${message}" method="post">
-            <div>Message body: <input autofocus type="text" data-th-field="*{body}"/></div>
+            <div>Send message: <input autofocus type="text" data-th-field="*{body}"/></div>
             <div><input hidden type="submit" value="Send message"/></div>
         </form>
     </div>
-    <div class="middle-part">
+    <div class="bottom-part">
         <div data-th-each="message : ${messages}">
             [[ ${#temporals.format(message.at, 'HH:mm:ss')} ]]: [[ ${message.body} ]]
         </div>
