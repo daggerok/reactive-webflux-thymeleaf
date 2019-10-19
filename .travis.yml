@@ -28,7 +28,7 @@ before_install:
 #
 - pip -V
 - export PATH=$HOME/.local/bin:$PATH
-- pip install --user --upgrade pip
+- pip3 install --user --upgrade pip
 - pip install --user --upgrade httpie
 - http --version --debug
 - pip -V
