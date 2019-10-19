@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<!--<head data-th-replace="dry :: generic_head(~{::title},~{})">-->
+<head data-th-replace="dry :: generic_head(~{::title},~{::style})">
+    <title>Thymeleaf Messages</title>
+    <style>
+        .container-part {
+            padding: 1%;
+            display: grid;
+            height: 100vh;
+            grid-template-areas:
+                    "heading-part"
+                    "middle-part"
+                    "bottom-part";
+            grid-template-rows:
+                    1fr
+                    11fr
+                    1fr;
+        }
+
+        .heading-part {
+            grid-area: heading-part;
+        }
+
+        .middle-part {
+            grid-area: middle-part;
+        }
+
+        .bottom-part {
+            grid-area: bottom-part;
+        }
+    </style>
+</head>
+<body class="container-part">
+    <div class="bottom-part">
+        <footer data-th-replace="dry :: copy"></footer><br/>
+    </div>
+    <div class="middle-part">
+        <div data-th-each="message : ${messages}">
+            [[${#temporals.format(message.at, 'HH:mm:ss')}]]: [[${message.body}]]
+        </div>
+    </div>
+    <div class="heading-part">
+        <h3 data-th-replace="dry :: heading"></h3>
+        <a href="index.html" data-th-href="@{/}">messaging</a>
+    </div>
+</body>
+</html>
